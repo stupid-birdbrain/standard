@@ -154,7 +154,7 @@ public struct Bitset256(Vector256<ulong> val) : IEnumerable<int> {
     
 }
 
-internal struct BitmaskArray256 {
+public struct BitmaskArray256 {
     public Bitset256[]? Array;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
