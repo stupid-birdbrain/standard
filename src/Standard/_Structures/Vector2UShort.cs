@@ -71,7 +71,7 @@ public struct Vector2UShort {
     public static explicit operator Vector2UShort(Vector2Int value) => new((ushort)value.X, (ushort)value.Y);
 }
 
-internal sealed class Vector2UShortJsonConverter : JsonConverter {
+public sealed class Vector2UShortJsonConverter : JsonConverter {
     public override bool CanConvert(Type objectType)
         => objectType == typeof(Vector2UShort);
 
