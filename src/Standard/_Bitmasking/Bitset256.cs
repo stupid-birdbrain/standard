@@ -1,12 +1,14 @@
 ﻿using System.Collections;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 
 namespace Standard;
 
-public struct Bitset256(Vector256<ulong> val) : IEnumerable<int> {
+[StructLayout(LayoutKind.Sequential)]
+public unsafe struct Bitset256(Vector256<ulong> val) : IEnumerable<int> {
     public const int CAPACITY = 256;
     private const ulong high_bit = 1UL << 63;
 
@@ -15,6 +17,29 @@ public struct Bitset256(Vector256<ulong> val) : IEnumerable<int> {
     public static Bitset256 Zero => default;
 
     public bool IsZero => _bits == Vector256<ulong>.Zero;
+    
+    public bool this[int index] {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        readonly get {
+            if ((uint)index >= CAPACITY) throw new ArgumentOutOfRangeException(nameof(index), "index must be between 0 and 255.");
+            ref readonly ulong baseRef = ref Unsafe.As<Bitset256, ulong>(ref Unsafe.AsRef(in this));
+            ulong source = baseRef;
+            ulong lane = Unsafe.Add(ref source, (nuint)(uint)index >> 6);
+            return (lane & (1UL << (index & 63))) != 0;
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        set {
+            if ((uint)index >= CAPACITY) throw new ArgumentOutOfRangeException(nameof(index), "index must be between 0 and 255.");
+            ref ulong baseRef = ref Unsafe.As<Bitset256, ulong>(ref this);
+            ref ulong lane = ref Unsafe.Add(ref baseRef, (nuint)(uint)index >> 6);
+            
+            if (value) {
+                lane |= (1UL << (index & 63));
+            } else {
+                lane &= ~(1UL << (index & 63));
+            }
+        }
+    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Set(int index) {
@@ -29,7 +54,6 @@ public struct Bitset256(Vector256<ulong> val) : IEnumerable<int> {
         ref ulong lane = ref Unsafe.Add(ref baseRef, (nuint)(uint)index >> 6);
         lane &= ~(high_bit >> (index & 63));
     }
-
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public readonly bool IsSet(int index) {
@@ -47,7 +71,7 @@ public struct Bitset256(Vector256<ulong> val) : IEnumerable<int> {
     }
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public unsafe readonly bool Contains(int index) {
+    public readonly bool Contains(int index) {
         fixed (Vector256<ulong>* ptr = &_bits) {
             ulong* p = (ulong*)ptr;
             int vectorIndex = index >> 6;
@@ -101,7 +125,7 @@ public struct Bitset256(Vector256<ulong> val) : IEnumerable<int> {
     IEnumerator<int> IEnumerable<int>.GetEnumerator() => GetEnumerator();
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     
-    public readonly override string ToString() {
+    public override readonly string ToString() {
         Span<char> buffer = stackalloc char[CAPACITY];
         int length = ToString(buffer);
         return buffer.Slice(0, length).ToString();
