@@ -1,3 +1,4 @@
 ﻿<Solution>
   <Project Path="src\Standard\Standard.csproj" Type="Classic C#" />
+  <Project Path="src\Tests\Tests.csproj" Type="Classic C#" />
 </Solution>

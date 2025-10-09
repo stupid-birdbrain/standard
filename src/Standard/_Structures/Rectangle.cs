@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using System.Runtime.CompilerServices;
 
 namespace Standard;
 
@@ -11,6 +12,11 @@ public struct Rectangle {
     public float Width;
     public float Height;
 
+    public Vector2 Location {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] readonly get => new(X, Y);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] set => (X, Y) = (value.X, value.Y);
+    }
+    
     public Rectangle(float x, float y, float width, float height) {
         X = x;
         Y = y;
@@ -28,14 +34,17 @@ public struct Rectangle {
         readonly get => Y;
         set => Y = value;
     }
+    
     public float Right {
         readonly get => X + Width;
         set => X = value - Width;
     }
+    
     public float Bottom {
         readonly get => Y + Height;
         set => Y = value - Height;
     }
+    
     public Vector2 TopLeft {
         readonly get => new(Left, Top);
         set {
@@ -43,6 +52,7 @@ public struct Rectangle {
             Top = value.Y;
         }
     }
+    
     public Vector2 TopRight {
         readonly get => new(Right, Top);
         set {
@@ -50,6 +60,7 @@ public struct Rectangle {
             Top = value.Y;
         }
     }
+    
     public Vector2 BottomLeft {
         readonly get => new(Left, Bottom);
         set {
@@ -85,12 +96,9 @@ public struct Rectangle {
         }
     }
     
-    public Vector2 Center
-    {
-        get
-        {
-            return new Vector2(this.X + (this.Width / 2), this.Y + (this.Height / 2));
-        }
+    public Vector2 Center {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => new Vector2(this.X + (this.Width / 2), this.Y + (this.Height / 2));
     }
 
     public bool Intersects(Rectangle value) {
