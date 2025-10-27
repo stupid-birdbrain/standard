@@ -10,7 +10,7 @@ public struct Line(Vector2 start, Vector2 end) {
         var scale = 1f / quantity;
         var points = new Vector2[quantity];
 
-        for (var i = 0; i < quantity; i++)
+        for(var i = 0; i < quantity; i++)
             points[i] = Vector2.Lerp(Start, End, scale * i);
 
         return points;

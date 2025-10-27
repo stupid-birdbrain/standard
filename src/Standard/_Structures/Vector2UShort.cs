@@ -76,7 +76,7 @@ public sealed class Vector2UShortJsonConverter : JsonConverter {
         => objectType == typeof(Vector2UShort);
 
     public override object ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer) {
-        if (reader.TokenType != JsonToken.StartArray) {
+        if(reader.TokenType != JsonToken.StartArray) {
             throw new InvalidDataException("Expected a json array.");
         }
 
@@ -85,7 +85,7 @@ public sealed class Vector2UShortJsonConverter : JsonConverter {
             (ushort)reader.ReadAsInt32()!
         );
 
-        if (!reader.Read() || reader.TokenType != JsonToken.EndArray) {
+        if(!reader.Read() || reader.TokenType != JsonToken.EndArray) {
             throw new InvalidDataException("Expected the json array to end after 2 values.");
         }
 

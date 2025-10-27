@@ -17,11 +17,11 @@ public unsafe struct Bitset256(Vector256<ulong> val) : IEnumerable<int> {
     public static Bitset256 Zero => default;
 
     public bool IsZero => _bits == Vector256<ulong>.Zero;
-    
+
     public bool this[int index] {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         readonly get {
-            if ((uint)index >= CAPACITY) throw new ArgumentOutOfRangeException(nameof(index), "index must be between 0 and 255.");
+            if((uint)index >= CAPACITY) throw new ArgumentOutOfRangeException(nameof(index), "index must be between 0 and 255.");
             ref readonly ulong baseRef = ref Unsafe.As<Bitset256, ulong>(ref Unsafe.AsRef(in this));
             ulong source = baseRef;
             ulong lane = Unsafe.Add(ref source, (nuint)(uint)index >> 6);
@@ -29,13 +29,14 @@ public unsafe struct Bitset256(Vector256<ulong> val) : IEnumerable<int> {
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         set {
-            if ((uint)index >= CAPACITY) throw new ArgumentOutOfRangeException(nameof(index), "index must be between 0 and 255.");
+            if((uint)index >= CAPACITY) throw new ArgumentOutOfRangeException(nameof(index), "index must be between 0 and 255.");
             ref ulong baseRef = ref Unsafe.As<Bitset256, ulong>(ref this);
             ref ulong lane = ref Unsafe.Add(ref baseRef, (nuint)(uint)index >> 6);
-            
-            if (value) {
+
+            if(value) {
                 lane |= (1UL << (index & 63));
-            } else {
+            }
+            else {
                 lane &= ~(1UL << (index & 63));
             }
         }
@@ -64,15 +65,15 @@ public unsafe struct Bitset256(Vector256<ulong> val) : IEnumerable<int> {
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public readonly bool Contains(in Bitset256 other) {
-        if (Avx.IsSupported) {
+        if(Avx.IsSupported) {
             return Avx.TestC(_bits, other._bits);
         }
         return (_bits & other._bits) == other._bits;
     }
-    
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public readonly bool Contains(int index) {
-        fixed (Vector256<ulong>* ptr = &_bits) {
+        fixed(Vector256<ulong>* ptr = &_bits) {
             ulong* p = (ulong*)ptr;
             int vectorIndex = index >> 6;
             int bitOffset = index & 63;
@@ -83,7 +84,7 @@ public unsafe struct Bitset256(Vector256<ulong> val) : IEnumerable<int> {
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public readonly bool AndAny(in Bitset256 other) {
-        if (Avx.IsSupported) {
+        if(Avx.IsSupported) {
             return !Avx.TestZ(_bits, other._bits);
         }
         return (_bits & other._bits) != Vector256<ulong>.Zero;
@@ -95,22 +96,22 @@ public unsafe struct Bitset256(Vector256<ulong> val) : IEnumerable<int> {
             BitOperations.PopCount(_bits.GetElement(2)) +
             BitOperations.PopCount(_bits.GetElement(3));
     }
-    
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public readonly int FirstSetBit() {
         ulong e0 = _bits.GetElement(0);
-        if (e0 != 0) return BitOperations.LeadingZeroCount(e0);
+        if(e0 != 0) return BitOperations.LeadingZeroCount(e0);
         ulong e1 = _bits.GetElement(1);
-        if (e1 != 0) return 64 + BitOperations.LeadingZeroCount(e1);
+        if(e1 != 0) return 64 + BitOperations.LeadingZeroCount(e1);
         ulong e2 = _bits.GetElement(2);
-        if (e2 != 0) return 128 + BitOperations.LeadingZeroCount(e2);
+        if(e2 != 0) return 128 + BitOperations.LeadingZeroCount(e2);
         ulong e3 = _bits.GetElement(3);
-        if (e3 != 0) return 192 + BitOperations.LeadingZeroCount(e3);
+        if(e3 != 0) return 192 + BitOperations.LeadingZeroCount(e3);
         return CAPACITY;
     }
 
     public static implicit operator byte(Bitset256 bs) => (byte)bs._bits.GetElement(0);
-    
+
     public static Bitset256 operator &(Bitset256 left, Bitset256 right) => new(left._bits & right._bits);
     public static Bitset256 operator |(Bitset256 left, Bitset256 right) => new(left._bits | right._bits);
     public static Bitset256 operator ^(Bitset256 left, Bitset256 right) => new(left._bits ^ right._bits);
@@ -120,29 +121,29 @@ public unsafe struct Bitset256(Vector256<ulong> val) : IEnumerable<int> {
 
     public override bool Equals(object? obj) => obj is Bitset256 other && this == other;
     public override int GetHashCode() => _bits.GetHashCode();
-    
+
     public readonly Enumerator GetEnumerator() => new(this);
     IEnumerator<int> IEnumerable<int>.GetEnumerator() => GetEnumerator();
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-    
+
     public override readonly string ToString() {
         Span<char> buffer = stackalloc char[CAPACITY];
         int length = ToString(buffer);
         return buffer.Slice(0, length).ToString();
     }
-    
+
     public readonly int ToString(Span<char> buffer) {
         int length = 0;
         bool first = true;
 
-        foreach (int index in this) {
-            if (!first) {
-                if (length + 2 > buffer.Length) break;
+        foreach(int index in this) {
+            if(!first) {
+                if(length + 2 > buffer.Length) break;
                 buffer[length++] = ',';
                 buffer[length++] = ' ';
             }
 
-            if (!index.TryFormat(buffer.Slice(length), out int charsWritten)) {
+            if(!index.TryFormat(buffer.Slice(length), out int charsWritten)) {
                 break;
             }
             length += charsWritten;
@@ -151,7 +152,7 @@ public unsafe struct Bitset256(Vector256<ulong> val) : IEnumerable<int> {
 
         return length;
     }
-    
+
     public struct Enumerator : IEnumerator<int> {
         private Bitset256 _mask;
         public Enumerator(in Bitset256 mask) {
@@ -162,8 +163,7 @@ public unsafe struct Bitset256(Vector256<ulong> val) : IEnumerable<int> {
         object IEnumerator.Current => Current;
         public bool MoveNext() {
             int index = _mask.FirstSetBit();
-            if (index >= CAPACITY)
-            {
+            if(index >= CAPACITY) {
                 Current = -1;
                 return false;
             }
@@ -174,8 +174,8 @@ public unsafe struct Bitset256(Vector256<ulong> val) : IEnumerable<int> {
         public void Reset() => throw new NotSupportedException();
         public readonly void Dispose() { }
     }
-    
-    
+
+
 }
 
 public struct BitmaskArray256 {
@@ -183,45 +183,44 @@ public struct BitmaskArray256 {
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static (int maskIndex, int bitIndex) DivRem(int index) => Math.DivRem(index, Bitset256.CAPACITY);
-    
+
     public readonly bool Get(int index) {
-        if (Array is null) return false;
+        if(Array is null) return false;
         var (maskIndex, bitIndex) = DivRem(index);
         return maskIndex < Array.Length && Array[maskIndex].IsSet(bitIndex);
     }
-    
+
     public void Set(int index) {
         var (maskIndex, bitIndex) = DivRem(index);
-        if (Array is null || maskIndex >= Array.Length) {
+        if(Array is null || maskIndex >= Array.Length) {
             System.Array.Resize(ref Array, maskIndex + 1);
         }
         Array[maskIndex].Set(bitIndex);
     }
-    
+
     public void Unset(int index) {
-        if (Array is null) return;
+        if(Array is null) return;
         var (maskIndex, bitIndex) = DivRem(index);
-        if (maskIndex < Array.Length)
-        {
+        if(maskIndex < Array.Length) {
             Array[maskIndex].Clear(bitIndex);
         }
     }
 
     public readonly IEnumerable<int> GetSetBits() {
-        if (Array is null) yield break;
-        for (int i = 0; i < Array.Length; i++) {
+        if(Array is null) yield break;
+        for(int i = 0; i < Array.Length; i++) {
             int baseIndex = i * Bitset256.CAPACITY;
-            foreach (int bitIndex in Array[i]) {
+            foreach(int bitIndex in Array[i]) {
                 yield return baseIndex + bitIndex;
             }
         }
     }
 
     public readonly bool Intersects(in BitmaskArray256 other) {
-        if (Array is null || other.Array is null) return false;
+        if(Array is null || other.Array is null) return false;
         int minLength = Math.Min(Array.Length, other.Array.Length);
-        for (int i = 0; i < minLength; i++) {
-            if (Array[i].AndAny(in other.Array[i])) {
+        for(int i = 0; i < minLength; i++) {
+            if(Array[i].AndAny(in other.Array[i])) {
                 return true;
             }
         }
@@ -229,11 +228,11 @@ public struct BitmaskArray256 {
     }
 
     public void Union(in BitmaskArray256 other) {
-        if (other.Array is null) return;
-        if (Array is null || Array.Length < other.Array.Length) {
+        if(other.Array is null) return;
+        if(Array is null || Array.Length < other.Array.Length) {
             System.Array.Resize(ref Array, other.Array.Length);
         }
-        for (int i = 0; i < other.Array.Length; i++) {
+        for(int i = 0; i < other.Array.Length; i++) {
             Array[i] |= other.Array[i];
         }
     }
@@ -245,7 +244,7 @@ public struct BitmaskArray256 {
         int requiredLength = maskIndex + 1;
         var newArray = new Bitset256[requiredLength > currentLength ? requiredLength : currentLength];
 
-        if (currentLength > 0) {
+        if(currentLength > 0) {
             System.Array.Copy(Array!, newArray, currentLength);
         }
 
