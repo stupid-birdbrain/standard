@@ -13,7 +13,7 @@ public struct Bitset8 : IEnumerable<int> {
 
     public static Bitset8 Zero => default;
 
-    public bool IsZero => _bits == 0;
+    public readonly bool IsZero => _bits == 0;
 
     public Bitset8(byte initialValue) {
         _bits = initialValue;
