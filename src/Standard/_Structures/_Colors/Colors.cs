@@ -1,6 +1,6 @@
 ﻿namespace Standard;
 
-public struct Colors {
+public sealed class Colors {
     public static Color Transparent = new Color(0);
     public static Color AliceBlue = new Color(0xfffff8f0);
     public static Color AntiqueWhite = new Color(0xffd7ebfa);
